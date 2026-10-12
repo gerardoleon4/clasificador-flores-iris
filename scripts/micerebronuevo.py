@@ -1,8 +1,9 @@
 import pandas as pd
-import joblib 
+import joblib
+from pathlib import Path
 
 print("El cerebro se esta cargando espera un momento...")
-cerebro_cargado=joblib.load('cerebro.joblib')
+cerebro_cargado=joblib.load(Path(__file__).parent.parent/'modelo'/'cerebro.joblib')
 print("Cerebro cargado de manera correcta")
 print("+"*100)
 

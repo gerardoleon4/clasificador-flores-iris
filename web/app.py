@@ -1,11 +1,13 @@
 from flask import Flask, request, render_template, jsonify
 import pandas as pd
 import joblib
+from pathlib import Path
 app=Flask(__name__)
 #carga el modelo cuando se inicia el servidor
-modelo=joblib.load('cerebro.joblib')
+CARPETA=Path(__file__).parent
+modelo=joblib.load(CARPETA.parent/'modelo'/'cerebro.joblib')
 #las 150 flores exportadas de MySQL (para la gráfica y los rangos normales)
-flores=pd.read_json('static/iris.json')
+flores=pd.read_json(CARPETA/'static'/'iris.json')
 RANGOS={columna:(flores[columna].min(),flores[columna].max()) for columna in modelo.feature_names_in_}
 
 #nombres en español de cada columna para explicar las reglas

@@ -1,8 +1,9 @@
 import pandas as pd
 import joblib
+from pathlib import Path
 
 #CARGAR EL CEREBRO ENTRENADO (NO NECESITA LA BASE DE DATOS)
-modelo=joblib.load('cerebro.joblib')
+modelo=joblib.load(Path(__file__).parent.parent/'modelo'/'cerebro.joblib')
 columnas=modelo.feature_names_in_
 
 while True:

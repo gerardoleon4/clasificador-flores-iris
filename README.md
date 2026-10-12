@@ -12,23 +12,36 @@ El objetivo fue recorrer el flujo completo de un proyecto de ML, desde los datos
 4. **Guardar el modelo ("cerebro").** Se entrena el modelo final con las 150 flores y se guarda en `cerebro.joblib`, así ya no hace falta la base de datos para clasificar.
 5. **Usar el modelo.** Primero desde la terminal y al final en una página web hecha con Flask.
 
-## Archivos
+## Estructura
+
+```
+proyecto-iris/
+├── web/                  Aplicación web con Flask
+│   ├── app.py
+│   ├── templates/        index.html (la página)
+│   └── static/           Fotos de cada especie e iris.json
+├── scripts/              Scripts de terminal (análisis, entrenamiento y pruebas)
+├── modelo/
+│   └── cerebro.joblib    Modelo ya entrenado
+├── .env.example          Plantilla de los datos de acceso a MySQL
+└── requirements.txt
+```
 
 | Archivo | Qué hace |
 |---|---|
-| `conexion.py` | Crea la conexión a la base de datos MySQL `iris_db` con los datos del archivo `.env`. |
-| `analizador.py` | Exploración de los datos: rangos, promedios por especie y gráficas de dispersión del sépalo. |
-| `prueba.py` | Primer modelo: divide los datos, entrena el árbol y clasifica flores escritas en la terminal. |
-| `analizador_ml.py` | Igual que `prueba.py`, pero además mide la precisión del modelo con `accuracy_score`. |
-| `entrenador.py` | Entrena el modelo final con todas las flores y lo guarda en `cerebro.joblib`. |
-| `micerebronuevo.py` / `clasificador.py` | Cargan `cerebro.joblib` y clasifican desde la terminal, sin base de datos. |
-| `app.py` | Aplicación web con Flask. |
-| `templates/index.html` | Interfaz de la página web. |
-| `static/` | Fotos de cada especie e `iris.json` (las 150 flores exportadas de MySQL). |
+| `scripts/conexion.py` | Crea la conexión a la base de datos MySQL `iris_db` con los datos del archivo `.env`. |
+| `scripts/analizador.py` | Exploración de los datos: rangos, promedios por especie y gráficas de dispersión del sépalo. |
+| `scripts/prueba.py` | Primer modelo: divide los datos, entrena el árbol y clasifica flores escritas en la terminal. |
+| `scripts/analizador_ml.py` | Igual que `prueba.py`, pero además mide la precisión del modelo con `accuracy_score`. |
+| `scripts/entrenador.py` | Entrena el modelo final con todas las flores y lo guarda en `modelo/cerebro.joblib`. |
+| `scripts/micerebronuevo.py` / `scripts/clasificador.py` | Cargan el modelo y clasifican desde la terminal, sin base de datos. |
+| `web/app.py` | Aplicación web con Flask. |
+| `web/templates/index.html` | Interfaz de la página web. |
+| `web/static/` | Fotos de cada especie e `iris.json` (las 150 flores exportadas de MySQL). |
 
 ## La aplicación web
 
-`app.py` levanta una página donde se escriben las cuatro medidas (o se elige un ejemplo) y el modelo responde la especie. Además:
+`web/app.py` levanta una página donde se escriben las cuatro medidas (o se elige un ejemplo) y el modelo responde la especie. Además:
 
 - **Explica la decisión:** recorre el camino que siguió la flor dentro del árbol y lo muestra como reglas sencillas, por ejemplo "Largo del pétalo ≤ 2.45 cm".
 - **Avisa si una medida es rara:** si un valor está fuera del rango de las flores con las que se entrenó, lo indica.
@@ -43,13 +56,15 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-**Aplicación web** (solo necesita `cerebro.joblib`, no la base de datos):
+**Aplicación web** (solo necesita `modelo/cerebro.joblib`, no la base de datos):
 
 ```bash
-python app.py
+python web/app.py
 ```
 
 Después abre <http://127.0.0.1:5000>.
+
+**Scripts de terminal:** se ejecutan igual, por ejemplo `python scripts/clasificador.py`.
 
 **Scripts que leen de la base de datos** (`analizador.py`, `prueba.py`, `analizador_ml.py`, `entrenador.py`): necesitan un servidor MySQL con la base `iris_db` y la tabla `iris` (columnas `Id`, `SepalLengthCm`, `SepalWidthCm`, `PetalLengthCm`, `PetalWidthCm`, `Species`).
 
