@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificador Iris</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3c4 5 4 10 0 14-4-4-4-9 0-14z' fill='%237c5cc4'/%3E%3Cpath d='M16 17c-3-3-9-3-12 1 3 3 9 3 12-1zM16 17c3-3 9-3 12 1-3 3-9 3-12-1z' fill='%235b3fa0'/%3E%3Cpath d='M16 17v12' stroke='%235b3fa0' stroke-width='2'/%3E%3C/svg%3E">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background: #fcfbfe;
+            color: #2d2242;
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .contenedor {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+        }
+
+        /* ---------- IZQUIERDA: FORMULARIO ---------- */
+        .formulario {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 64px 72px;
+            max-width: 560px;
+            margin-left: auto;
+            width: 100%;
+        }
+
+        .marca {
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #8d7fb3;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: normal;
+            font-size: 40px;
+            line-height: 1.15;
+            color: #3d2775;
+            margin-bottom: 12px;
+        }
+
+        .descripcion {
+            color: #6e6388;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        /* Botones de ejemplo */
+        .ejemplos {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 32px;
+            font-size: 13px;
+            color: #8d7fb3;
+        }
+
+        .ejemplos button {
+            padding: 6px 12px;
+            border: 1px solid #e4ddf1;
+            border-radius: 999px;
+            background: transparent;
+            color: #5b3fa0;
+            font: inherit;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .ejemplos button:hover { background: #f3eefa; border-color: #c4badb; }
+
+        fieldset { border: none; margin-bottom: 28px; }
+
+        legend {
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #8d7fb3;
+            margin-bottom: 12px;
+        }
+
+        .campos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: #4b3f66;
+            margin-bottom: 6px;
+        }
+
+        .con-unidad { position: relative; }
+
+        .con-unidad span {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #b3a8cc;
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 40px 12px 14px;
+            border: 1px solid #e4ddf1;
+            border-radius: 8px;
+            background: #fff;
+            font: inherit;
+            font-size: 16px;
+            color: #2d2242;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        input:focus { outline: none; border-color: #7c5cc4; box-shadow: 0 0 0 3px rgba(124, 92, 196, 0.15); }
+        input::placeholder { color: #c4badb; }
+
+        .enviar {
+            width: 100%;
+            margin-top: 8px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: #7c5cc4;
+            color: #fff;
+            font: inherit;
+            font-size: 15px;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .enviar:hover { background: #6a4cb0; }
+        .enviar:disabled { opacity: 0.6; cursor: wait; }
+
+        .nota {
+            margin-top: 12px;
+            text-align: center;
+            font-size: 12px;
+            color: #a89cc4;
+        }
+
+        .error {
+            margin-top: 20px;
+            padding: 12px 14px;
+            border-left: 2px solid #b3261e;
+            background: #fdf3f2;
+            color: #b3261e;
+            font-size: 14px;
+        }
+
+        /* ---------- DERECHA: RESULTADO ---------- */
+        .imagen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px;
+            background: #f3eefa;
+        }
+
+        .tarjeta-flor {
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+        }
+
+        .tarjeta-flor img {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            border-radius: 12px;
+            animation: aparecer 0.6s ease-out;
+        }
+
+        @keyframes aparecer {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .etiqueta, .titulo-chico {
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #a89cc4;
+        }
+
+        .etiqueta { margin-top: 20px; }
+
+        .especie {
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 30px;
+            font-style: italic;
+            color: #5b3fa0;
+            margin-top: 4px;
+        }
+
+        .bloque {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid #e4ddf1;
+        }
+
+        .reglas {
+            margin-top: 4px;
+            font-size: 13px;
+            line-height: 1.9;
+            color: #6e6388;
+        }
+
+        .avisos {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: #fff8e8;
+            color: #8a6514;
+            font-size: 12px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .grafica { display: block; width: 100%; height: auto; margin-top: 6px; }
+        .grafica text { font-family: inherit; font-size: 10px; fill: #a89cc4; }
+        .grafica .tu-flor { transition: cx 0.3s ease, cy 0.3s ease; }
+
+        .leyenda {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            font-size: 11px;
+            color: #8d7fb3;
+        }
+
+        .leyenda i {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+            vertical-align: 0;
+        }
+
+        .credito {
+            margin-top: 14px;
+            font-size: 10px;
+            color: #b3a8cc;
+        }
+
+        /* Antes de clasificar */
+        .vacio {
+            text-align: center;
+            color: #a89cc4;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .vacio svg { display: block; margin: 0 auto 20px; }
+        .vacio strong { color: #6e6388; font-weight: 600; }
+
+        /* ---------- CELULAR ---------- */
+        @media (max-width: 860px) {
+            .contenedor { grid-template-columns: 1fr; min-height: 0; }
+            .formulario { padding: 40px 16px; margin: 0; max-width: none; }
+            h1 { font-size: 32px; }
+            .imagen { padding: 32px 16px 48px; min-height: 240px; }
+        }
+    </style>
+</head>
+<body>
+    {% set fotos = {
+        'Iris-setosa':     {'archivo': 'setosa.jpg',     'credito': 'Foto: Денис Анисимов · Wikimedia Commons · Dominio público'},
+        'Iris-versicolor': {'archivo': 'versicolor.jpg', 'credito': 'Foto: D. Gordon E. Robertson · Wikimedia Commons · CC BY-SA 3.0'},
+        'Iris-virginica':  {'archivo': 'virginica.jpg',  'credito': 'Foto: Eric Hunt · Wikimedia Commons · CC BY-SA 4.0'}
+    } %}
+
+    <div class="contenedor">
+        <section class="formulario">
+            <p class="marca">Proyecto Iris · Machine Learning</p>
+            <h1>Clasificador de flores Iris</h1>
+            <p class="descripcion">Escribe las medidas de la flor y el modelo te dirá a qué especie pertenece. El resultado aparece mientras escribes.</p>
+
+            <div class="ejemplos">
+                <span>Probar con:</span>
+                <button type="button" data-valores="5.1,3.5,1.4,0.2">Setosa</button>
+                <button type="button" data-valores="7.0,3.2,4.7,1.4">Versicolor</button>
+                <button type="button" data-valores="6.3,3.3,6.0,2.5">Virginica</button>
+            </div>
+
+            <form id="formulario" action="/predecir" method="POST">
+                <fieldset>
+                    <legend>Sépalo</legend>
+                    <div class="campos">
+                        <div>
+                            <label for="sepal_lenght">Largo</label>
+                            <div class="con-unidad">
+                                <input id="sepal_lenght" type="number" step="any" min="0" name="sepal_lenght" value="{{ request.form.get('sepal_lenght', '') }}" placeholder="5.1" required>
+                                <span>cm</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="sepal_width">Ancho</label>
+                            <div class="con-unidad">
+                                <input id="sepal_width" type="number" step="any" min="0" name="sepal_width" value="{{ request.form.get('sepal_width', '') }}" placeholder="3.5" required>
+                                <span>cm</span>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Pétalo</legend>
+                    <div class="campos">
+                        <div>
+                            <label for="petal_lenght">Largo</label>
+                            <div class="con-unidad">
+                                <input id="petal_lenght" type="number" step="any" min="0" name="petal_lenght" value="{{ request.form.get('petal_lenght', '') }}" placeholder="1.4" required>
+                                <span>cm</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="petal_width">Ancho</label>
+                            <div class="con-unidad">
+                                <input id="petal_width" type="number" step="any" min="0" name="petal_width" value="{{ request.form.get('petal_width', '') }}" placeholder="0.2" required>
+                                <span>cm</span>
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <button type="submit" id="clasificar" class="enviar">Clasificar</button>
+            </form>
+
+            <p class="error" id="error" {% if not error %}hidden{% endif %}>{{ error }}</p>
+        </section>
+
+        <section class="imagen" id="resultado">
+            {% if prediccion and prediccion in fotos %}
+                <div class="tarjeta-flor">
+                    <img src="{{ url_for('static', filename=fotos[prediccion].archivo) }}" alt="Fotografía de {{ prediccion }}">
+                    <p class="etiqueta">La especie es</p>
+                    <p class="especie">{{ prediccion }}</p>
+                    {% if reglas %}
+                    <div class="bloque">
+                        <p class="titulo-chico">¿Por qué?</p>
+                        <div class="reglas">{% for regla in reglas %}<p>{{ regla }}</p>{% endfor %}</div>
+                        {% if avisos %}<div class="avisos">Medidas poco comunes, el resultado puede no ser confiable.<br>{{ avisos|join('<br>')|safe }}</div>{% endif %}
+                    </div>
+                    {% endif %}
+                    <p class="credito">{{ fotos[prediccion].credito }}</p>
+                </div>
+            {% else %}
+                <div class="vacio">
+                    <svg width="88" height="120" viewBox="0 0 120 160" fill="none" stroke="#c4badb" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                        <path d="M60 18c13 20 13 42 0 58-13-16-13-38 0-58z"/>
+                        <path d="M60 78c-18-8-38 0-44 20 16 6 34 0 44-16"/>
+                        <path d="M60 78c18-8 38 0 44 20-16 6-34 0-44-16"/>
+                        <path d="M60 82v66"/>
+                        <path d="M60 148c0-20 10-36 26-44"/>
+                    </svg>
+                    <p>Escribe las medidas o elige un ejemplo<br>para ver la flor.</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <script>
+        const fotos = {{ fotos|tojson }};
+        const carpetaFotos = "{{ url_for('static', filename='') }}";
+        const campos = ['sepal_lenght', 'sepal_width', 'petal_lenght', 'petal_width'];
+        const colores = { 'Iris-setosa': '#d6ccec', 'Iris-versicolor': '#a690dd', 'Iris-virginica': '#5b3fa0' };
+
+        const formulario = document.getElementById('formulario');
+        const boton = document.getElementById('clasificar');
+        const error = document.getElementById('error');
+        const resultado = document.getElementById('resultado');
+
+        let flores = [];          // las 150 flores para la gráfica
+        let especieActual = null; // para no repetir la animación si no cambia
+        let espera = null;
+
+        fetch(carpetaFotos + 'iris.json')
+            .then(function (r) { return r.json(); })
+            .then(function (datos) {
+                flores = datos;
+                if (resultado.querySelector('.grafica')) {
+                    // ya había un resultado: redibujar con las 150 flores
+                    dibujarGrafica();
+                    moverTuFlor();
+                } else if (resultado.querySelector('.tarjeta-flor')) {
+                    // la página llegó con un resultado del servidor: dibujarlo completo
+                    clasificar();
+                }
+            });
+
+        // Botones de ejemplo: llenan el formulario y clasifican
+        document.querySelectorAll('.ejemplos button').forEach(function (ejemplo) {
+            ejemplo.addEventListener('click', function () {
+                const valores = ejemplo.dataset.valores.split(',');
+                campos.forEach(function (campo, i) { document.getElementById(campo).value = valores[i]; });
+                clasificar();
+            });
+        });
+
+        // Clasificar en vivo: cuando los 4 campos tienen número
+        formulario.addEventListener('input', function () {
+            clearTimeout(espera);
+            const completos = campos.every(function (c) { return document.getElementById(c).value !== ''; });
+            if (completos && formulario.checkValidity()) espera = setTimeout(clasificar, 350);
+        });
+
+        formulario.addEventListener('submit', function (evento) {
+            evento.preventDefault();
+            clasificar();
+        });
+
+        async function clasificar() {
+            boton.disabled = true;
+            error.hidden = true;
+            try {
+                const respuesta = await fetch('/api/predecir', { method: 'POST', body: new FormData(formulario) });
+                const datos = await respuesta.json();
+                if (!respuesta.ok) throw new Error(datos.error);
+                mostrarFlor(datos);
+            } catch (e) {
+                error.textContent = e.message || 'No se pudo conectar con el servidor';
+                error.hidden = false;
+            } finally {
+                boton.disabled = false;
+            }
+        }
+
+        function mostrarFlor(datos) {
+            const especie = datos.especie;
+            // solo se cambia la foto (con animación) si cambió la especie
+            if (especie !== especieActual || !resultado.querySelector('.grafica')) {
+                const foto = fotos[especie];
+                resultado.innerHTML = `
+                    <div class="tarjeta-flor">
+                        <img src="${carpetaFotos}${foto.archivo}" alt="Fotografía de ${especie}">
+                        <p class="etiqueta">La especie es</p>
+                        <p class="especie">${especie}</p>
+                        <div class="bloque">
+                            <p class="titulo-chico">¿Por qué?</p>
+                            <div class="reglas"></div>
+                            <div class="avisos" hidden></div>
+                        </div>
+                        <div class="bloque">
+                            <p class="titulo-chico">Dónde cae tu flor</p>
+                            <svg class="grafica" viewBox="0 0 340 180"></svg>
+                            <div class="leyenda">
+                                <span><i style="background:${colores['Iris-setosa']}"></i>Setosa</span>
+                                <span><i style="background:${colores['Iris-versicolor']}"></i>Versicolor</span>
+                                <span><i style="background:${colores['Iris-virginica']}"></i>Virginica</span>
+                                <span><i style="background:#f2b632"></i>Tu flor</span>
+                            </div>
+                        </div>
+                        <p class="credito">${foto.credito}</p>
+                    </div>`;
+                dibujarGrafica();
+                especieActual = especie;
+            }
+            resultado.querySelector('.reglas').innerHTML = datos.reglas.map(function (r) { return '<p>' + r + '</p>'; }).join('');
+            const avisos = resultado.querySelector('.avisos');
+            avisos.hidden = datos.avisos.length === 0;
+            avisos.innerHTML = 'Medidas poco comunes, el resultado puede no ser confiable.<br>' + datos.avisos.join('<br>');
+            moverTuFlor();
+        }
+
+        // ---------- Gráfica: largo vs ancho del pétalo ----------
+        const ancho = 340, alto = 180, margen = { izq: 44, der: 8, arr: 10, aba: 36 };
+        const xMax = 7.5, yMax = 2.7;
+        const escalaX = function (v) { return margen.izq + Math.min(v, xMax) / xMax * (ancho - margen.izq - margen.der); };
+        const escalaY = function (v) { return alto - margen.aba - Math.min(v, yMax) / yMax * (alto - margen.arr - margen.aba); };
+
+        function dibujarGrafica() {
+            const svg = resultado.querySelector('.grafica');
+            let html = '';
+            for (let x = 0; x <= 7; x++) html += `<text x="${escalaX(x)}" y="${alto - margen.aba + 14}" text-anchor="middle">${x}</text>`;
+            for (let y = 0; y <= 2.5; y += 0.5) html += `<text x="${margen.izq - 6}" y="${escalaY(y) + 3}" text-anchor="end">${y}</text>`;
+            html += `<line x1="${margen.izq}" x2="${ancho - margen.der}" y1="${alto - margen.aba}" y2="${alto - margen.aba}" stroke="#e4ddf1"/>`;
+            html += `<text x="${(ancho + margen.izq) / 2}" y="${alto - 4}" text-anchor="middle">Largo del pétalo (cm) →</text>`;
+            html += `<text transform="translate(11 ${(alto - margen.aba + margen.arr) / 2}) rotate(-90)" text-anchor="middle">Ancho del pétalo (cm) →</text>`;
+            flores.forEach(function (f) {
+                html += `<circle cx="${escalaX(f.PetalLengthCm)}" cy="${escalaY(f.PetalWidthCm)}" r="2.6" fill="${colores[f.Species]}" opacity="0.85"/>`;
+            });
+            html += `<circle class="tu-flor" r="6" fill="#f2b632" stroke="#fff" stroke-width="2"/>`;
+            svg.innerHTML = html;
+        }
+
+        function moverTuFlor() {
+            const punto = resultado.querySelector('.tu-flor');
+            if (!punto) return;
+            punto.setAttribute('cx', escalaX(parseFloat(document.getElementById('petal_lenght').value)));
+            punto.setAttribute('cy', escalaY(parseFloat(document.getElementById('petal_width').value)));
+        }
+    </script>
+</body>
+</html>
